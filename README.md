@@ -1,4 +1,4 @@
-# X-protocols-on-grid-network
+# Vertex-Minor-Problem-on-Grid-Network
 
 Scripts created while invesitgating vertex minor problem in grid shaped graphs. 
 
