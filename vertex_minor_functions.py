@@ -241,6 +241,60 @@ def flipping_protocol(graph_int, cols, show_graph = False, gridlock = False,
 
     return G
 
+# for a 3xn graph
+def extract_corners(graph_int, cols, show_graph = False, gridlock = False, 
+                      plot_size = (3,3), position_int = None, invert = False): 
+
+    #check to see if grid is sufficiently large 
+    if cols < 3:
+        print ("Grid is not large enough.")
+        return
+
+    G = graph_int.copy()
+
+    #perform X Y Z measurements for all n
+    if invert == True: 
+        G =  Y_graph_operation( 2*cols+2, G)
+        G =  X_graph_operation( cols +2, G, pivot= 2 )
+        G = Z_graph_operation( 2 ,G )
+        G = Y_graph_operation( cols+3 ,G )
+        G = Y_graph_operation( 3 ,G )
+    else:
+        G =  Y_graph_operation( 2, G)
+        G =  X_graph_operation( cols +2, G, pivot= 2*cols+2 )
+        G = Z_graph_operation( 2*cols+2 ,G )
+        G = Y_graph_operation( cols+3 ,G )
+        G = Y_graph_operation( 2*cols+3 ,G )
+
+    #if n=3 the protocol is over 
+    if cols == 3: 
+            #plot graph 
+        if show_graph== True:
+            if gridlock == False:
+                draw_graph(G, plot_size = plot_size)
+            else:
+                draw_graph(G, position_int, plot_size = plot_size)
+
+        return G
+
+
+    #if n>=4 finish the protocol 
+    if invert == True:
+        G = Z_graph_operation(cols+4 ,G )
+        G = Z_graph_operation(4 ,G )
+    else:
+        G = Z_graph_operation(cols+4 ,G )
+        G = Z_graph_operation(2*cols+4 ,G )
+
+    #plot graph 
+    if show_graph== True:
+        if gridlock == False:
+            draw_graph(G, plot_size = plot_size)
+        else:
+            draw_graph(G, position_int, plot_size = plot_size)
+
+    return G
+
 
 # In[5]:
 
