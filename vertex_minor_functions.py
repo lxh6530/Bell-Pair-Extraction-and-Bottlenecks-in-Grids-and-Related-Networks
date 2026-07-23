@@ -5,7 +5,8 @@
 
 
 import scipy
-import networkx as nx #A python library that is helpful when dealing with graphs 
+#A python library that is helpful when dealing with graphs 
+import networkx as nx 
 import matplotlib.pyplot as plt
 
 
@@ -43,7 +44,8 @@ def draw_graph( graph, position = False, plot_size = (5,5)):
 
     plt.show()
 
-#function to determine where each node needs to be for gridlock for a grid defined by integers
+#function to determine where each node needs to be for gridlock for a grid 
+#defined by integers
 def convert_position_to_integers (integer_Graph, cols ):
     pos_int = {}
     for node in integer_Graph.nodes():
@@ -58,7 +60,9 @@ def convert_position_to_integers (integer_Graph, cols ):
 
 
 ##perform local complementation on a node using a graph defined by integers
-def local_complementation_integers (vertex, Graph, show_graph = False, gridlock = False, plot_size = (3,3), position_int = None):    
+def local_complementation_integers (vertex, Graph, show_graph = False, 
+                                    gridlock = False, plot_size = (3,3), 
+                                    position_int = None):    
     # copy the graph 
     G = Graph.copy()
 
@@ -89,10 +93,12 @@ def local_complementation_integers (vertex, Graph, show_graph = False, gridlock 
 
 
 #Functions for performing Graph Operations/Pauli Measurements
-##Each function has the option to draw the resulting graph after performing the operation
+##Each function has the option to draw the resulting graph after performing
+#the operation
 
-def Z_graph_operation(vertex_to_delete, graph_int, show_graph = False, gridlock = False, 
-                      plot_size = (3,3), position_int = None): 
+def Z_graph_operation(vertex_to_delete, graph_int, show_graph = False, 
+                      gridlock = False, plot_size = (3,3), 
+                      position_int = None): 
 
     G = graph_int.copy()
 
@@ -109,8 +115,9 @@ def Z_graph_operation(vertex_to_delete, graph_int, show_graph = False, gridlock 
     return G
 
 
-def Y_graph_operation(vertex_to_delete, graph_int, show_graph = False, gridlock = False, 
-                      plot_size = (3,3), position_int = None): 
+def Y_graph_operation(vertex_to_delete, graph_int, show_graph = False, 
+                      gridlock = False, plot_size = (3,3), 
+                      position_int = None): 
 
     G = graph_int.copy()
 
@@ -130,7 +137,8 @@ def Y_graph_operation(vertex_to_delete, graph_int, show_graph = False, gridlock 
     return G
 
 
-def X_graph_operation(vertex_to_delete, graph_int, pivot = False, show_graph = False, gridlock = False, 
+def X_graph_operation(vertex_to_delete, graph_int, pivot = False, 
+                      show_graph = False, gridlock = False, 
                       plot_size = (3,3), position_int = None): 
 
     neighbors = list(graph_int.neighbors(vertex_to_delete))
@@ -146,7 +154,7 @@ def X_graph_operation(vertex_to_delete, graph_int, pivot = False, show_graph = F
 
     #ensure the pivot choice is a neighbor to the desired vertex 
     if pivot not in neighbors:
-        print("pivot is not a neighbor of vertex, unable to perform operation")
+        print("pivot isnt a neighbor, unable to perform operation")
         return graph_int
 
     G = graph_int.copy()
@@ -169,28 +177,32 @@ def X_graph_operation(vertex_to_delete, graph_int, pivot = False, show_graph = F
     return G
 
 
-# In[16]:
+# In[1]:
 
 
 #functions for protocols on 3xn and 2xn grids 
 
 #for a 3xn graph 
-def crossing_protocol(vertex_a, graph_int, cols, pivot = False, show_graph = False, gridlock = False, 
+def crossing_protocol(vertex_a, graph_int, cols, pivot = False, 
+                      show_graph = False, gridlock = False, 
                       plot_size = (3,3), position_int = None): 
 
     neighbors = list(graph_int.neighbors(vertex_a))
 
     #check to see if vertex a is a valid choice
-    required_neighbors = [vertex_a - cols, vertex_a -1, vertex_a + 1, vertex_a + cols]
+    required_neighbors = [vertex_a - cols, vertex_a -1, 
+                          vertex_a + 1, vertex_a + cols]
     for neighbor in required_neighbors:
         if neighbor not in neighbors:
-            print ("vertex a is not not a valid option, please pick another vertex.")
+            print ("a is not not a valid option, pick another vertex.")
             return
 
     G = graph_int.copy()
 
     #perform X measurement on vertex a using a-n as the pivot 
-    G= X_graph_operation(vertex_a, graph_int, pivot = vertex_a-cols, show_graph= True, gridlock = True, plot_size= (10,3), position_int= pos_int)
+    G= X_graph_operation(vertex_a, graph_int, pivot = vertex_a-cols, 
+                         show_graph= True, gridlock = True, 
+                         plot_size= (10,3), position_int= pos_int)
 
     #perform vertex deletions 
     G = Z_graph_operation( vertex_a-cols,G )
@@ -243,7 +255,8 @@ def flipping_protocol(graph_int, cols, show_graph = False, gridlock = False,
 
 # for a 3xn graph
 def extract_corners(graph_int, cols, show_graph = False, gridlock = False, 
-                      plot_size = (3,3), position_int = None, invert = False): 
+                      plot_size = (3,3), position_int = None, 
+                    invert = False): 
 
     #check to see if grid is sufficiently large 
     if cols < 3:
@@ -295,21 +308,70 @@ def extract_corners(graph_int, cols, show_graph = False, gridlock = False,
 
     return G
 
+#for a 2xn graph 
+def corner_folding_protocol( graph_int, cols, show_graph = False, 
+                             gridlock = False, plot_size = (3,3), 
+                             position_int = None): 
 
-# In[5]:
+    #check to see if grid is sufficiently large
+    if cols < 5:
+        print("Grid is too small, please pick a 2xn grid with n>4")
+        return
+
+    G = graph_int.copy()
+
+    #Perform LC's
+    G = local_complementation_integers(cols+1, G)
+    G = local_complementation_integers(2*cols, G)
+
+    G  = local_complementation_integers(1, G)
+    G  = local_complementation_integers(cols, G)
+
+    G = local_complementation_integers(2, G)
+    G = local_complementation_integers(cols-1, G)
+
+    #Perform Y measurements
+    G = Y_graph_operation(1, G)
+    G = Y_graph_operation(2, G)
+    G = Y_graph_operation(cols, G)
+    G = Y_graph_operation(cols-1, G)
+
+    #perform final LC's
+    G = local_complementation_integers(cols+1, G)
+    G = local_complementation_integers(2*cols, G) 
+
+    #plot graph 
+    if show_graph== True:
+        if gridlock == False:
+            draw_graph(G, plot_size = plot_size)
+        else:
+            draw_graph(G, position_int, plot_size = plot_size)
+
+    return G
 
 
-#perform the X Protocol on a grid of integers to extract a bell pair. Must specify the desired ordered repeater line
-def x_protocol_grid_integers(graph_int, ordered_repeater_line, bell_pair, show_graph = False, gridlock = False, plot_size = (3,3),
-                             position_int = None, show_X_measurement = False, gridlock_X = False, show_Z_measurement = False,
+# In[3]:
+
+
+#perform the X Protocol on a grid of integers to extract a bell pair. 
+#Must specify the desired ordered repeater line
+def x_protocol_grid_integers(graph_int, ordered_repeater_line, bell_pair, 
+                             show_graph = False, gridlock = False, 
+                             plot_size = (3,3),
+                             position_int = None, 
+                             show_X_measurement = False, 
+                             gridlock_X = False, 
+                             show_Z_measurement = False,
                              gridlock_Z = False):
 
     G = graph_int.copy()
 
     #itratively perform x measurements along the repeater line 
     for i in range (len(ordered_repeater_line)-2):
-        #pivots are specified using the following: let V_i be the ith vertex in the repeater line. Then if X(V_1), then pivot = V_0; 
-        # if x(v_{n-1}), then pivot = V_n; for any intermeidary, use an adjacent pivot on the repeater line. 
+        #pivots are specified using the following: let V_i be the 
+        #ith vertex in the repeater line. Then if X(V_1), then 
+        #pivot = V_0; if x(v_{n-1}), then pivot = V_n; for any 
+        #intermeidary, use an adjacent pivot on the repeater line. 
 
         if i == 0: 
             p = ordered_repeater_line[0]
@@ -325,16 +387,19 @@ def x_protocol_grid_integers(graph_int, ordered_repeater_line, bell_pair, show_g
             p = pivots[0]
 
 
-    G = X_graph_operation(ordered_repeater_line[i+1], G, pivot = p, show_graph= show_X_measurement, gridlock= gridlock_X, 
-                          plot_size= plot_size)
+    G = X_graph_operation(ordered_repeater_line[i+1], G, pivot = p, 
+                          show_graph= show_X_measurement, 
+                          gridlock= gridlock_X, plot_size= plot_size)
 
     #find all the neighbors of the bell pair 
-    neighboring_vertices = list( G.neighbors(bell_pair[0])) + list( G.neighbors(bell_pair[1])) 
-    neighboring_vertices = [v for v in neighboring_vertices if v not in bell_pair]
+    neighboring_vertices = list( G.neighbors(bell_pair[0])) + list( G.neighbors(bell_pair[1]))
+    neighboring_vertices = [v for v in neighboring_vertices 
+                            if v not in bell_pair]
 
     #perform z measurements on all neighbors
     for v in neighboring_vertices: 
-        G = Z_graph_operation(v, G, show_graph = show_Z_measurement, gridlock= gridlock_Z, plot_size= plot_size)
+        G = Z_graph_operation(v, G, show_graph = show_Z_measurement, 
+                              gridlock= gridlock_Z, plot_size= plot_size)
 
     #plot graph 
     if show_graph== True:
@@ -344,4 +409,10 @@ def x_protocol_grid_integers(graph_int, ordered_repeater_line, bell_pair, show_g
             draw_graph(G, position_int, plot_size = plot_size)
 
     return G
+
+
+# In[ ]:
+
+
+
 
